@@ -2,6 +2,8 @@ const userModel = require("../models/user.model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 
+const tokenBlacklistModel = require("../models/blacklist.model")
+
 /**
  * @name registerUserController
  * @description register a new user, expects username email and pass in requirement
@@ -28,7 +30,7 @@ async function registerUserController(req,res){
         })
     }
 
-    const hash = await bcrypt.has(password,10)
+    const hash = await bcrypt.hash(password,10)
      const user = await userModel.create({
         username,
         email,
@@ -41,7 +43,7 @@ async function registerUserController(req,res){
         {expiresIn:"1d"}
      )
 
-     res.cookies("token",token)
+   res.cookie("token", token)
      res.status(201).json({
         message: "User registered successfully",
         user:{
@@ -92,7 +94,82 @@ async function loginUserController(req,res){
      })
 }
 
+
+// async function logoutUserController(req,res){
+//     const token = req.cookies.token
+//     if(token){
+//         await tokenBlacklistModel.create({token})
+
+//     }
+//     res.clearCookie("token")
+//     res.status(200).json({
+//         message : "User logged out successfully"
+//     })
+// }
+
+// async function logoutUserController(req, res) {
+//     console.log("Cookies:", req.cookies);
+
+//     const token = req.cookies.token;
+//     console.log("Token:", token);
+
+//     if (token) {
+//         const savedToken = await tokenBlacklistModel.create({ token });
+//         console.log("Saved token:", savedToken);
+//     } else {
+//         console.log("No token found");
+//     }
+
+//     res.clearCookie("token");
+//     res.status(200).json({
+//         message: "User logged out successfully"
+//     });
+// }
+
+
+
+
+async function logoutUserController(req, res) {
+    try {
+        console.log("Cookies:", req.cookies);
+
+        const token = req.cookies.token;
+        console.log("Token:", token);
+
+        if (token) {
+            const saved = await tokenBlacklistModel.create({ token });
+            console.log("Saved:", saved);
+        } else {
+            console.log("No token found");
+        }
+
+        res.clearCookie("token");
+
+        res.status(200).json({
+            message: "User logged out successfully"
+        });
+
+    } catch (err) {
+        console.log("ERROR:", err);
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+/**
+ * @name getmeController
+ * @description get the current logged i user details
+ * @ access private
+ */
+
+async function getMeController(req,res){
+   const user = await userModel.findById(req.user.id)
+   
+}
+
+
 module.exports = {
     registerUserController,
-    loginUserController
+    loginUserController,
+    logoutUserController
 }
