@@ -55,76 +55,125 @@ async function registerUserController(req,res){
 
 }
 
-/**
- * @name loginUserController
- * @description login a user, expects email and password in the request body
- * @access Public
- */
+async function loginUserController(req, res) {
+    console.log("=========== LOGIN ===========");
+    console.log("Request Body:", req.body);
 
-async function loginUserController(req,res){
-    const{email, password}= req.body
-    const user = await userModel.findOne({email})
-    if(!user){
+    const { email, password } = req.body;
+
+    console.log("Email:", email);
+    console.log("Password:", password);
+
+    const user = await userModel.findOne({ email });
+
+    console.log("User Found:", user);
+
+    if (!user) {
+        console.log("User not found");
         return res.status(400).json({
-            message:"Invalid email or password"
-        })
+            message: "Invalid email or password"
+        });
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    if(!isPasswordValid){
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    console.log("Password Valid:", isPasswordValid);
+
+    if (!isPasswordValid) {
+        console.log("Wrong password");
         return res.status(400).json({
-            message:"Invalid email orpassword"
-        })
+            message: "Invalid email or password"
+        });
     }
-     const token = jwt.sign(
-        {id: user._id, username: user.username},
+
+    const token = jwt.sign(
+        { id: user._id, username: user.username },
         process.env.JWT_SECRET,
-        {expiresIn:"1d"}
-     )
+        { expiresIn: "1d" }
+    );
 
-     res.cookie("token",token)
-     res.status(200).json({
-        message :"User login successfully",
-        user :{
-            id:user._id,
-            username :user.username,
+    res.cookie("token", token);
+
+    return res.status(200).json({
+        message: "User login successfully",
+        user: {
+            id: user._id,
+            username: user.username,
             email: user.email
-
         }
-        
-     })
+    });
 }
 
+// /**
+//  * @name loginUserController
+//  * @description login a user, expects email and password in the request body
+//  * @access Public
+//  */
 
-// async function logoutUserController(req,res){
-//     const token = req.cookies.token
-//     if(token){
-//         await tokenBlacklistModel.create({token})
-
+// async function loginUserController(req,res){
+//     const{email, password}= req.body
+//     const user = await userModel.findOne({email})
+//     if(!user){
+//         return res.status(400).json({
+//             message:"Invalid email or password"
+//         })
 //     }
-//     res.clearCookie("token")
-//     res.status(200).json({
-//         message : "User logged out successfully"
-//     })
+//     const isPasswordValid = await bcrypt.compare(password, user.password)
+//     if(!isPasswordValid){
+//         return res.status(400).json({
+//             message:"Invalid email orpassword"
+//         })
+//     }
+//      const token = jwt.sign(
+//         {id: user._id, username: user.username},
+//         process.env.JWT_SECRET,
+//         {expiresIn:"1d"}
+//      )
+
+//      res.cookie("token",token)
+//      res.status(200).json({
+//         message :"User login successfully",
+//         user :{
+//             id:user._id,
+//             username :user.username,
+//             email: user.email
+
+//         }
+        
+//      })
 // }
 
-// async function logoutUserController(req, res) {
-//     console.log("Cookies:", req.cookies);
 
-//     const token = req.cookies.token;
-//     console.log("Token:", token);
+// // async function logoutUserController(req,res){
+// //     const token = req.cookies.token
+// //     if(token){
+// //         await tokenBlacklistModel.create({token})
 
-//     if (token) {
-//         const savedToken = await tokenBlacklistModel.create({ token });
-//         console.log("Saved token:", savedToken);
-//     } else {
-//         console.log("No token found");
-//     }
+// //     }
+// //     res.clearCookie("token")
+// //     res.status(200).json({
+// //         message : "User logged out successfully"
+// //     })
+// // }
 
-//     res.clearCookie("token");
-//     res.status(200).json({
-//         message: "User logged out successfully"
-//     });
-// }
+// // async function logoutUserController(req, res) {
+// //     console.log("Cookies:", req.cookies);
+
+// //     const token = req.cookies.token;
+// //     console.log("Token:", token);
+
+// //     if (token) {
+// //         const savedToken = await tokenBlacklistModel.create({ token });
+// //         console.log("Saved token:", savedToken);
+// //     } else {
+// //         console.log("No token found");
+// //     }
+
+// //     res.clearCookie("token");
+// //     res.status(200).json({
+// //         message: "User logged out successfully"
+// //     });
+// // }
 
 
 
